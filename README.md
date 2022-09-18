@@ -1,5 +1,5 @@
 # HackThisMountain_Agrotech
-Hello all, This is my project submission for HTM 3.0.. # PROBLEAM STATEMENT �Agriculture - Post Harvest Management
+Hello all, This is my project submission for HTM 3.0.. # PROBLEAM STATEMENT  Open inovation  �Agriculture - Post Harvest Management
 Ensure that the farmer gets fair value for their produce.
 
 Reduce the post-harvest losses to raise farmer income and improve food security and livelihoods for vulnerable people.
