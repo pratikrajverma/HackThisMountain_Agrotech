@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AgroTech</title>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="images/agriculture_0.png" />
+    <script src="https://smtpjs.com/v3/smtp.js"></script>
+    <style>
+        h4 {
+            font-size: 30px
+        }
+
+        #answer,
+        #msg {
+            width: 300px;
+            height: 150px
+        }
+
+        #email,
+        #name {
+            width: 300px
+        }
+
+        .answerThis {
+            color: #00f;
+            text-decoration: underline;
+            text-align: center;
+            cursor: pointer
+        }
+
+        .status {
+            text-align: right;
+            padding: 10px;
+            font-weight: 700;
+            border-left: 4px solid #00458b;
+            background-color: #ededf0;
+            margin-top: -16px
+        }
+
+        .highlite-green {
+            background-color: green;
+            color: #fff
+        }
+
+        .highlite-red {
+            background-color: red;
+            color: #fff
+        }
+
+        @media (max-width:767px) and (min-width:280px) {
+            .status {
+                margin-top: -20px
+            }
+        }
+
+        @media (max-width:1024px) and (min-width:768px) {
+            .status {
+                margin-top: -30px
+            }
+        }
+    </style>
+</head>
+
+<body onload="loadData()">
+    <head-section></head-section>
+    <pop-up></pop-up>
+    <script src="js/header.js"></script>
+    <h2>Discussion</h2>
+    <div class="search-input-wrapper" id="searchInputWrapper">
+        <label for="searchQuery" aria-label="search-bar" tabindex="-1">
+            <button class="search-button" type="button" tabindex="-1"
+                style="background-color: white; border: none; margin-left: 10px;">
+                <img src="search.svg" alt="search icon" /></button></label>
+        <input class="search" type="text" placeholder=" Search by Keyword" name="searchQuery" id="searchQuery"
+            autocomplete="off" onkeyup="search()" />
+    </div>
+
+    <div id="discussion"></div>
+
+    <div class="popup" id="popup-1">
+        <div class="overlay"></div>
+        <div class="content">
+            <div class="close-btn" onclick="togglePopup()">×</div>
+            <h4>Send Question</h4>
+            <form method="POST" id="addQuestion">
+                <label for="name">Name:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                <input type="text" id="name" name="name"><br><br>
+
+                <label for="email">Mobile:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                <input type="text" id="email" name="email" onkeyup=formatPhone(this)><br><br>
+
+                <label for="msg">Question:</label>
+                <input type="text" id="msg" name="msg"><br><br><br>
+                <input type="button" onclick="addQuestion()" value="Send Question" aria-label="send-mail">
+            </form>
+        </div>
+    </div>
+
+    <div class="popup" id="popup-2">
+        <div class="overlay"></div>
+        <div class="content">
+            <div class="close-btn" onclick="closePopup()">×</div>
+            <h4>Add answer</h4>
+            <form method="POST" id="addAnswer">
+                <p id="questionPrint"></p>
+                <label for="answer">Answer:</label>
+                <input type="text" id="answer" name="answer"><br><br><br>
+                <input type="button" onclick="addAnswer(event)" value="Post Answer" aria-label="send-mail">
+            </form>
+        </div>
+    </div>
+    <button class="discussion-section-button" onclick="togglePopup()" aria-label="send-question">Send Your
+        Question</button>
+    <script>
+
+        function search() {
+            let list;
+            document.getElementById("discussion").innerHTML = "";
+
+            let query = document.getElementById("searchQuery").value;
+            let temp = JSON.parse(localStorage.getItem("discussionArray"));
+            list = list + `<ul class="discussion-list">`
+            if (query !== "") {
+                temp.forEach(element => {
+                    let flag = false;
+                    let que = element.question, ans = element.answer;
+                    if (element.question.toLowerCase().includes(query.toLowerCase())) {
+                        flag = true;
+                        que = returnhighlightd(element.question, query, element.question.toLowerCase());
+                    }
+                    let answerArray = [];
+                    for (let i = 0; i < ans.length; i++) {
+                        if (ans[i].toLowerCase().includes(query.toLowerCase())) {
+                            flag = true;
+                            answerArray.push(returnhighlightd(ans[i], query, ans[i].toLowerCase()));
+                        } else {
+                            answerArray.push(ans[i]);
+                        }
+                    }
+
+                    if (flag) {
+                        list += `<li>
+              <h3>` + que + `?</h3>`
+                        for (let i = 0; i < answerArray.length; i++) {
+                            if (element.status[i] === "Not verified yet.")
+                                list += `<p class="answer">` + answerArray[i] + `<div class="status">Status :<span class="highlite-red">` + element.status[i] + `</span></div></p>`
+                            else
+                                list += `<p class="answer">` + answerArray[i] + `<div class="status">Status :<span class="highlite-green">` + element.status[i] + `</span></div></p>`
+                        }
+                        list += `<p class="answerThis" onclick="togglePopup1(event)">Add another answer.....</p>
+    </li>`;
+                    }
+
+                });
+            }
+            else {
+                loadData();
+                return;
+            }
+            list = list + `</ul>`;
+            list = list.replace("undefined", "");
+            if (list.length !== 33)
+                document.getElementById("discussion").innerHTML = list;
+            else {
+                list = `<img class=nothing-to-show src="noRecordFound.png" alt="no record found">`;
+                document.getElementById("discussion").innerHTML = list;
+
+            }
+        }
+
+        function addAnswer(e) {
+            let question = e.target.parentNode.childNodes[1].innerHTML;
+            question = question.replaceAll("?", "");
+            question = question.trim();
+            let temp = JSON.parse(localStorage.getItem("discussionArray"));
+            for (i = 0; i < temp.length; i++) {
+                temp[i].question = temp[i].question.replaceAll("?", "");
+                temp[i].question = temp[i].question.trim();
+                if (temp[i].question === question) {
+                    let ans = document.getElementById("answer").value;
+                    if (ans.length === 0) {
+                        alert("Please Enter Something....");
+                        return;
+                    }
+                    temp[i].status.push("Not verified yet.")
+                    temp[i].answer.push(ans);
+                    break;
+                }
+            }
+            localStorage.setItem("discussionArray", JSON.stringify(temp));
+            document.getElementById("addAnswer").reset();
+            closePopup();
+            location.reload();
+        }
+
+
+
+        if (localStorage.getItem("discussionArray") === null) {
+            let discussionArray = [];
+            localStorage.setItem("discussionArray", JSON.stringify(discussionArray));
+        }
+
+
+        let discussObj = {
+            name: "",
+            question: "",
+            answer: [],
+            status: []
+        };
+
+        function addQuestion() {
+            let name = document.getElementById("name").value;
+            let question = document.getElementById("msg").value;
+            if (name.length !== 0 && question.length !== 0) {
+                discussObj.name = name;
+                discussObj.question = question;
+
+                let temp = JSON.parse(localStorage.getItem("discussionArray"));
+                temp.push(discussObj);
+                localStorage.setItem("discussionArray", JSON.stringify(temp));
+
+                document.getElementById("addQuestion").reset();
+                togglePopup();
+                alert("Question added successfully....");
+                location.reload();
+            } else {
+                alert("Please fill out correct information.");
+            }
+        }
+
+        function loadData() {
+            let list;
+            let cropArray = JSON.parse(localStorage.getItem("discussionArray"));
+
+            if (cropArray.length !== 0) {
+
+                list = list + `<ul class="discussion-list">`
+                cropArray.forEach(element => {
+                    if (element.answer.length != 0) {
+                        list += `<li>
+          <h3>`+ element.question + `?</h3>`
+                        let answerArray = element.answer;
+                        for (let i = 0; i < answerArray.length; i++) {
+                            if (element.status[i] === "Not verified yet.")
+                                list += `<p class="answer">` + answerArray[i] + `<div class="status">Status :<span class="highlite-red">` + element.status[i] + `</span></div></p>`
+                            else
+                                list += `<p class="answer">` + answerArray[i] + `<div class="status">Status :<span class="highlite-green">` + element.status[i] + `</span></div></p>`
+                        }
+
+                        list += `<p class="answerThis" onclick="togglePopup1(event)">Add another answer.....</p>
+    </li>`
+                    } else {
+                        list += `<li>
+          <h3>`+ element.question + ` ?</h3>
+          <p class="answerThis" onclick="togglePopup1(event)">Not Answered Yet...Click here to answer.....</p>
+    </li>`
+                    }
+
+                });
+
+                list = list + `</ul>`;
+            } else {
+                list += `<img class=nothing-to-show src="noRecordFound.png" alt="no record found">`;
+
+            }
+            list = list.replace("undefined", "");
+            document.getElementById("discussion").innerHTML = list;
+        }
+
+
+        function togglePopup() {
+            document.getElementById("popup-1").classList.toggle("active");
+        }
+
+
+        function togglePopup1(e) {
+
+            let question = e.target.parentNode.childNodes[1].innerHTML;
+            document.getElementById("questionPrint").innerHTML = question;
+            document.getElementById("popup-2").classList.toggle("active");
+        }
+
+        function closePopup() {
+            document.getElementById("popup-2").classList.toggle("active");
+        }
+    </script>
+</body>
+
+</html>

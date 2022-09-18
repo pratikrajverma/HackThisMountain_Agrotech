@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>AgroTech</title>
+  <link rel="stylesheet" type="text/css" href="css/main.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="images/agriculture_0.png" />
+  <script src="https://smtpjs.com/v3/smtp.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.0/themes/base/jquery-ui.css" />
+  <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.0/jquery-ui.js"></script>
+  <script>
+    $(function () {
+      $("#datepicker").datepicker({ maxDate: new Date() });
+    });
+  </script>
+  <style>
+    h4 {
+      font-size: 30px
+    }
+
+    #msg {
+      width: 300px;
+      height: 150px
+    }
+
+    .popup>input {
+      width: 300px;
+      height: 30px;
+      border-radius: 10px;
+      border: 1px solid grey
+    }
+
+    #img {
+      border: none
+    }
+
+    .error,
+    .req {
+      color: red
+    }
+  </style>
+</head>
+
+<body>
+  <head-section></head-section>
+  <pop-up></pop-up>
+  <script src="js/header.js"></script>
+  <h2>Shop</h2>
+  <ul class="shop-list">
+    <li>
+      <h3>Buy Tools</h3>
+      <a href="buyTools.html"><img src="images/download.jfif" width="200px" height="150px" alt="tools image"></a>
+    </li>
+    <li>
+      <h3>Sell Tools</h3>
+      <img src="images/download.jfif" onclick="togglePopup()" width="200px" height="150px" alt="download image">
+    </li>
+    <li>
+      <h3>Buy Crop</h3>
+      <a href="buyCrop.html"><img src="images/crop.jpg" width="200px" height="150px" alt="crop image"></a>
+    </li>
+    <li>
+      <h3>Sell Crop</h3>
+      <img src="images/crop.jpg" onclick="togglePopup2()" width="200px" height="150px" alt="buy crop image">
+    </li>
+  </ul>
+  <div class="popup" id="popup-1">
+    <div class="overlay"></div>
+    <div class="content">
+      <div class="close-btn" onclick="togglePopup()">×</div>
+      <h4>Add a tool to sell</h4>
+      <form id="addToolForm">
+        <label for="name">Tool Name<span
+            class="req">*</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="text" id="name" name="name"><br><br>
+        <p class="error" id="nameErr"></p>
+
+        <label for="email">Mobile No<span
+            class="req">*</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="text" id="email" name="email" onkeyup="formatPhone(this)"><br><br>
+        <p class="error" id="mailErr"></p>
+
+        <label for="price">Price<span
+            class="req">*</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="text" id="priceTool" name="price" onkeyup="format1()"><br><br>
+        <p class="error " id="priceErr"></p>
+
+        <label for="brand">Brand<span
+            class="req">*</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="text" id="brand" name="brand"><br><br>
+        <p class="error" id="brandErr"></p>
+        <label for="material">Buying date<span
+            class="req">*</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <!-- <input type="date" id="material" class="calendar" name="material"> -->
+        <input type="text" id="datepicker" /><br><br>
+        <p class="error" id="materialErr"></p>
+
+        <label for="img">Select image<span class="req">*</span>:</label>&nbsp;&nbsp;
+        <input type="file" id="imgTool" name="img" accept="image/*">
+        <br><br><br>
+        <input type="button" value="Submit" onclick="addTool()" aria-label="aadd-tool">
+      </form>
+    </div>
+  </div>
+  <div class="popup" id="popup-2">
+    <div class="overlay"></div>
+    <div class="content">
+      <div class="close-btn" onclick="togglePopup2()">×</div>
+      <h4>Add Crop to sell</h4>
+      <form id="addCropForm">
+        <label for="name">Crop Name<span
+            class="req">*</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="text" id="nameCrop" name="name"><br><br>
+        <p class="error" id="nameErrCrop"></p>
+
+        <label for="email">Mobile No<span
+            class="req">*</span>:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="text" id="emailCrop" onkeyup="formatPhone(this)" name="email"><br><br>
+        <p class="error" id="mailErrCrop"></p>
+
+        <label for="tool">Quantity in quintol<span class="req">*</span>:&nbsp;</label>
+        <input type="text" id="toolCrop" name="tool"><br><br>
+        <p class="error" id="toolErrCrop"></p>
+
+        <label for="brand">Price per quintol<span class="req">*</span>:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="text" id="brandCrop" onkeyup="format()" name="brand"><br><br>
+        <p class="error" id="brandErrCrop"></p>
+        <label for="img">Select image<span class="req">*</span>:</label>&nbsp;&nbsp;
+        <input type="file" id="imgCrop" name="img" accept="image/*">
+        <br><br><br>
+        <input type="button" value="Submit" onclick="addCrop()" aria-label="add-crop">
+      </form>
+    </div>
+  </div>
+</body>
+<script>
+  function format1() {
+    let num = document.getElementById("priceTool");
+    let temp = num.value.replaceAll(",", "");
+    let price = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(temp);
+    num.value = price;
+  }
+  function format() {
+    let num = document.getElementById("brandCrop");
+    let temp = num.value.replaceAll(",", "");
+    let price = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(temp);
+    num.value = price;
+  }
+  let toolObj = {
+    name: "",
+    mobile: "",
+    price: "",
+    toolName: "",
+    brand: "",
+    material: "",
+    image: ""
+  };
+  function addTool() {
+    if (validateTool()) {
+      let name = document.getElementById("name").value;
+      let mobile = document.getElementById("email").value;
+      let price = document.getElementById("priceTool").value;
+      let brand = document.getElementById("brand").value;
+      let material = document.getElementById("datepicker").value;
+      let image = document.getElementById("imgTool");
+      toolObj.name = name;
+      toolObj.mobile = mobile;
+      price = price.replaceAll(",", "");
+      price = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(price);
+      toolObj.price = price;
+      toolObj.brand = brand;
+      toolObj.material = material;
+
+      const reader = new FileReader();
+      reader.addEventListener("load", function () {
+        set(reader.result);
+        toolObj.image += reader.result;
+      });
+
+      function set(url) {
+        toolObj.image = url;
+        setTool(toolObj);
+        document.getElementById("addToolForm").reset();
+        togglePopup();
+        alert("Tool added successfully....");
+        sendEmail(name, brand, price);
+        let toolArray = JSON.parse(localStorage.getItem("toolArray"));
+      }
+      reader.readAsDataURL(image.files[0]);
+    }
+  }
+  function sendEmail(name, brand, price) {
+    Email.send({
+      SecureToken: "fbf31702-bb7f-4a4e-9c1c-4ccf17ee777f",
+      To: 'bhuppiofficial@gmail.com',
+      From: "bhuppiofficial@gmail.com",
+      Subject: "New Tool added",
+      Body: "Tool Name :" + name + " Brand : " + brand + " Price : " + price
+    }).then(
+      message => {
+        console.log(message);
+      }
+    );
+  }
+  function sendEmailCrop(name, quantity, price) {
+    Email.send({
+      SecureToken: "fbf31702-bb7f-4a4e-9c1c-4ccf17ee777f",
+      To: 'bhuppiofficial@gmail.com',
+      From: "bhuppiofficial@gmail.com",
+      Subject: "New Crop added",
+      Body: "Crop Name :" + name + " Quantity : " + quantity + " Price : " + price
+    }).then(
+      message => {
+        console.log(message);
+      }
+    );
+  }
+  function validateTool() {
+    let name = document.getElementById("name").value;
+    let mobile = document.getElementById("email").value;
+    let price = document.getElementById("priceTool").value;
+    let brand = document.getElementById("brand").value;
+    let material = document.getElementById("datepicker").value;
+    let image = document.getElementById("imgTool");
+
+    if (name.length === 0) {
+      document.getElementById("nameErr").innerHTML = "Please specify tool name";
+      return false;
+    } else
+      document.getElementById("nameErr").innerHTML = "";
+    var phoneno = /^\d{10}$/;
+    let mob = mobile.replaceAll("-", "");
+    console.log(mob);
+    if (!mob.match(phoneno)) {
+      document.getElementById("mailErr").innerHTML = "Enter correct no.";
+      return false;
+    } else
+      document.getElementById("mailErr").innerHTML = "";
+    if (price.length === 0) {
+      document.getElementById("priceErr").innerHTML = "Please enter price";
+      return false;
+    } else
+      document.getElementById("priceErr").innerHTML = "";
+
+    if (brand.length === 0) {
+      document.getElementById("brandErr").innerHTML = "Please specify Brand";
+      return false;
+    } else
+      document.getElementById("brandErr").innerHTML = "";
+
+    if (material.length === 0) {
+      document.getElementById("materialErr").innerHTML = "Please specify Material";
+      return false;
+    } else
+      document.getElementById("materialErr").innerHTML = "";
+    return true;
+  }
+
+  let obj = {
+    name: "",
+    mobile: "",
+    quantity: "",
+    price: "",
+    image: ""
+  };
+
+  function addCrop() {
+    if (validateCrop()) {
+      let name = document.getElementById("nameCrop").value;
+      let mobile = document.getElementById("emailCrop").value;
+      let quantity = document.getElementById("toolCrop").value;
+      let price = document.getElementById("brandCrop").value;
+      let image = document.getElementById("imgCrop");
+      price = price.replaceAll(",", "");
+
+      price = new Intl.NumberFormat('en-IN', { maximumSignificantDigits: 3 }).format(price);
+      obj.name = name;
+      obj.mobile = mobile;
+      obj.quantity = quantity;
+      obj.price = price;
+      obj.image = image;
+      const reader = new FileReader();
+      reader.addEventListener("load", function () {
+        set(reader.result);
+        toolObj.image += reader.result;
+      });
+      function set(url) {
+        obj.image = url;
+        setCrop(obj);
+        document.getElementById("addCropForm").reset();
+        togglePopup2();
+        sendEmailCrop(name, quantity, price)
+        alert("Crop added successfully....");
+        let cropArray = JSON.parse(localStorage.getItem("cropArray"));
+      }
+      reader.readAsDataURL(image.files[0]);
+    }
+  }
+
+  function validateCrop() {
+    let name = document.getElementById("nameCrop").value;
+    let mobile = document.getElementById("emailCrop").value;
+    let quantity = document.getElementById("toolCrop").value;
+    let price = document.getElementById("brandCrop").value;
+    let image = document.getElementById("imgCrop").value;
+    if (name.length === 0) {
+      document.getElementById("nameErrCrop").innerHTML = "Please specify crop name";
+      return false;
+    } else
+      document.getElementById("nameErrCrop").innerHTML = "";
+    var phoneno = /^\d{10}$/;
+    let mob = mobile.replaceAll("-", "");
+    console.log(mob);
+    if (!mob.match(phoneno)) {
+      document.getElementById("mailErrCrop").innerHTML = "Enter correct no.";
+      return false;
+    } else
+      document.getElementById("mailErrCrop").innerHTML = "";
+    if (quantity.length === 0) {
+      document.getElementById("toolErrCrop").innerHTML = "Please specify quantity";
+      return false;
+    } else
+      document.getElementById("toolErrCrop").innerHTML = "";
+    if (price.length === 0) {
+      document.getElementById("brandErrCrop").innerHTML = "Please enter price";
+      return false;
+    } else
+      document.getElementById("toolErrCrop").innerHTML = "";
+    return true;
+  }
+
+  function togglePopup() {
+    document.getElementById("popup-1").classList.toggle("active");
+  }
+
+  function togglePopup2() {
+    document.getElementById("popup-2").classList.toggle("active");
+  }
+</script>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

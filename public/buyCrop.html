@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTech</title>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="icon" type="image/png" href="images/agriculture_0.png" />
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+
+<body onload="loadData()">
+    <head-section></head-section>
+    <h2>Buy Crop</h2>
+    <pop-up></pop-up>
+    <div class="search-input-wrapper" id="searchInputWrapper">
+        <label for="searchQuery" aria-label="search-bar" tabindex="-1">
+            <button class="search-button" type="button" tabindex="-1"
+                style="background-color: white; border: none; margin-left: 10px;">
+                <img src="search.svg" alt="search icon" /></button></label>
+        <input class="search" type="text" placeholder=" Search by Crop Name" name="searchQuery" id="searchQuery"
+            autocomplete="off" onkeyup="search()" />
+    </div>
+    <div id="cropList" class="loader"></div>
+    <script src="js/header.js"></script>
+    <script>
+        function search() {
+            let query = document.getElementById("searchQuery").value;
+            let list;
+            let flag = false;
+            if (query !== "") {
+                document.getElementById("cropList").innerHTML = "";
+                let toolArray = [];
+
+
+                const db = this.firebase.database().ref('crops');
+                db.on("value", (snapshot) => {
+                    snapshot.forEach(function (element) {
+                        toolArray.push(element.val());
+                    })
+                })
+                list += `<ul class="buy-tools-list">`;
+                toolArray.forEach(element => {
+                    let elementName = element.name, elementBrand = element.brand;
+                    if (elementName.toLowerCase().includes(query.toLowerCase())) {
+                        flag = true;
+                        list += `<li>
+        <h3>`+ returnhighlightd(elementName, query, elementName.toLowerCase()) + `</h3>`;
+                        list = list + `<img src="` + element.image + `"  width="200px" height="150px" alt="image">
+        <p>Price : `+ element.price + ` per quintal</p>  
+        <p>Quantity : `+ element.quantity + `</p>
+        <p>Seller Contact : `+ element.mobile + `</p>
+    </li>`
+                    }
+                });
+                list += `<ul>`;
+                list = list.replace("undefined", "");
+
+                if (flag)
+                    document.getElementById("cropList").innerHTML = list;
+                else {
+                    list += `<img class=nothing-to-show src="noRecordFound.png" alt="no record found">`;
+                    document.getElementById("cropList").innerHTML = list;
+                }
+
+            } else {
+                loadData();
+            }
+        }
+
+
+        function call(cropArray) {
+            let list;
+            if (cropArray.length === 0) {
+                list += `<img class=nothing-to-show src="noRecordFound.png">`;
+            }
+            else {
+                
+                list = list + `<ul class="buy-tools-list">`
+                cropArray.forEach(element => {
+                    list += `<li>
+        <h3>`+ element.name + `</h3>`;
+                    list = list + `<img src="` + element.image + `"  width="200px" height="150px" alt="image">
+        <p>Price : `+ element.price + ` per quintal</p>  
+        <p>Quantity : `+ element.quantity + ` quintal</p>
+        <p>Seller Contact : `+ element.mobile + `</p>
+    </li>`
+                });
+
+                list = list + `</ul>`;
+            }
+            list = list.replace("undefined", "");
+            document.getElementById("cropList").classList.remove("loader");
+
+            document.getElementById("cropList").innerHTML = list;
+        }
+        function loadData() {
+            var ifConnected = window.navigator.onLine;
+            if (!ifConnected) {
+                alert('Please check your internet connection.....');
+            }
+            else {
+                
+                const db = this.firebase.database().ref('crops');
+                console.log(db);
+                db.on("value", (snapshot) => {
+                    let cropArray = [];
+                    snapshot.forEach(function (element) {
+                        cropArray.push(element.val());
+                    })
+                    call(cropArray);
+                })
+            }
+        }
+    </script>
+</body>
+</html>

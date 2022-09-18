@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>AgroTech</title>
+  <link rel="stylesheet" type="text/css" href="css/main.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="images/agriculture_0.png" />
+</head>
+<script src="https://smtpjs.com/v3/smtp.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<style>
+  #msg {
+    width: 300px;
+    height: 150px
+  }
+
+  #email,
+  #name {
+    width: 300px
+  }
+
+  .discussion-list img {
+    width: 300px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto
+  }
+
+  h3 {
+    text-align: center
+  }
+
+  p {
+    text-align: center
+  }
+
+  .posted-by {
+    font-size: larger;
+    font-weight: bolder;
+    text-align: right;
+    width: 50%
+  }
+
+  .posted-on {
+    font-size: larger;
+    text-align: left;
+    font-weight: bolder;
+    width: 50%
+  }
+
+  #grey {
+    color: #27ae60
+  }
+
+  .division {
+    width: 100%;
+    display: flex;
+    justify-content: space-between
+  }
+
+  @media (max-width:767px) and (min-width:280px) {
+    .posted-on {
+      width: 100%;
+      font-size: 20px
+    }
+
+    .division {
+      display: block
+    }
+
+    .discussion-list li {
+      margin-left: -25px
+    }
+
+    .posted-by {
+      width: 100%;
+      font-size: 20px;
+      text-align: left
+    }
+  }
+
+  @media (max-width:1024px) and (min-width:767px) {
+    .posted-on {
+      width: 100%
+    }
+
+    .division {
+      display: block
+    }
+
+    .posted-by {
+      width: 100%;
+      text-align: left
+    }
+  }
+</style>
+
+<body onload="loadData()">
+  <head-section></head-section>
+  <pop-up></pop-up>
+  <script src="js/header.js"></script>
+  <h2>Expert tips</h2>
+  <div class="search-input-wrapper" id="searchInputWrapper">
+    <label for="searchQuery" aria-label="search-bar" tabindex="-1">
+      <button class="search-button" type="button" tabindex="-1"
+        style="background-color: white; border: none; margin-left: 10px;">
+        <img src="search.svg" alt="search icon" /></button></label>
+    <input class="search" type="text" placeholder=" Search by keyword" name="searchQuery" id="searchQuery"
+      autocomplete="off" onkeyup="search()" />
+  </div>
+
+  <div id="articleList" class="loader"></div>
+  <button class="discussion-section-button" onclick="togglePopup()" aria-label="send-question">Post an article</button>
+  <div class="popup" id="popup-1">
+    <div class="overlay"></div>
+    <div class="content">
+      <div class="close-btn" onclick="togglePopup()">×</div>
+      <h4>Post Article</h4>
+      <form method="POST" id="articleForm">
+        <label for="name">Name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="text" id="name" name="name"><br><br>
+
+        <label for="email">Heading:&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="text" id="email" name="email"><br><br>
+
+        <label for="msg">Article:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+        <input type="text" id="msg" name="msg"><br><br><br>
+
+        <label for="file">Image:</label>
+        <input type="file" id="file" name="file"><br><br><br>
+
+        <input type="button" onclick="addArticle()" value="Post an Article" aria-label="send-mail">
+
+
+      </form>
+    </div>
+  </div>
+
+  <script>
+
+
+    function search() { let e; document.getElementById("articleList").innerHTML = ""; let t = document.getElementById("searchQuery").value, a = []; if (this.firebase.database().ref("expertTips").on("value", e => { e.forEach(function (e) { a.push(e.val()) }) }), e += '<ul class="discussion-list">', "" !== t) { { let n = !0; a.forEach(a => { let i = a.heading, l = a.article, s = a.name, o = !1; i.toLowerCase().includes(t.toLowerCase()) && (i = returnhighlightd(i, t, i.toLowerCase()), o = !0), l.toLowerCase().includes(t.toLowerCase()) && (l = returnhighlightd(l, t, l.toLowerCase()), o = !0), s.toLowerCase().includes(t.toLowerCase()) && (s = returnhighlightd(s, t, s.toLowerCase()), o = !0), o && (n = !1, 0 != a.image.length ? e = (e += "<li>\n              <h3>" + i + "</h3>") + '<img src="' + a.image + '"  width="200px" height="200px" alt="image">\n        <p class="answer">' + l + '</p>\n        <div class="division">\n\n        <p class="posted-on">Posted On - ' + a.date + " " + a.time + "</p>\n        <p class='posted-by'>Posted By - " + s + "</p>\n        </div>\n    </li>" : e += "<li>\n          <h3>" + i + '</h3>\n        <p class="answer">' + l + '</p>\n        <div class="division">\n        <p class="posted-on">Posted On - ' + a.date + " " + a.time + "</p>\n        <p class='posted-by'>Posted By - " + s + "</p>\n        </div>\n    </li>") }), n && (e += '<img class=nothing-to-show src="noRecordFound.png" alt="no record found">') } e = (e += "</ul>").replace("undefined", ""), document.getElementById("articleList").innerHTML = e } else loadData() } let articleObj = { name: "", heading: "", article: "", image: "", date: "", time: "" }, flag = !0; function addArticle() { let e = document.getElementById("name").value, t = document.getElementById("email").value, a = document.getElementById("msg").value, n = document.getElementById("file"); articleObj.name = e, articleObj.heading = t, articleObj.article = a; let i = new Date; articleObj.date = i.getDate() + "/" + (i.getMonth() + 1) + "/" + i.getFullYear(); let l = i.getHours(), s = "AM", o = i.getMinutes(); l >= 12 && (l %= 12, s = "PM"), o >= 0 && o <= 9 && (o = "0" + o), articleObj.time = l + ":" + o + " " + s; if ("" === n.value) { this.firebase.database().ref("expertTips").push(articleObj), document.getElementById("articleForm").reset(), togglePopup(), sendEmail(e, a), alert("Article added successfully...."), location.reload() } else { const t = new FileReader; t.addEventListener("load", () => { !function (t) { articleObj.image = t, this.firebase.database().ref("expertTips").push(articleObj), document.getElementById("articleForm").reset(), togglePopup(), sendEmail(e, a), location.reload(), alert("Article added successfully....") }(t.result), articleObj.image += t.result }), t.readAsDataURL(n.files[0]) } } function sendEmail(e, t) { Email.send({ SecureToken: "fbf31702-bb7f-4a4e-9c1c-4ccf17ee777f", To: "bhuppiofficial@gmail.com", From: "bhuppiofficial@gmail.com", Subject: "New article posted by : " + e, Body: "Article :" + t }).then(e => { console.log(e) }) } function togglePopup() { document.getElementById("popup-1").classList.toggle("active") } function call(e) { let t; 0 !== e.length ? (t += '<ul class="discussion-list">', e.forEach(e => { 0 != e.image.length ? t = (t += "<li>\n          <h3>" + e.heading + "</h3>") + '<img src="' + e.image + '"  width="200px" height="150px" alt="image">\n        <p class="answer">' + e.article + '</p>\n        <div class="division">\n\n        <p class="posted-on">Posted On - <span id="grey">' + e.date + " " + e.time + "</span></p>\n        <p class='posted-by'>Posted By - " + e.name + "</p>\n        </div>\n\n    </li>" : t += "<li>\n          <h3>" + e.heading + '</h3>\n        <p class="answer">' + e.article + '</p>\n        <div class="division">\n        <p class="posted-on">Posted On - <span id="grey">' + e.date + " " + e.time + "</span></p>\n        <p class='posted-by'>Posted By - " + e.name + "</p>\n        <div>\n    </li>" }), t += "</ul>") : t += '<img class=nothing-to-show src="noRecordFound.png" alt="no record found">', t = t.replace("undefined", ""), document.getElementById("articleList").classList.remove("loader"), document.getElementById("articleList").innerHTML = t } function loadData() { if (window.navigator.onLine) { let e = []; this.firebase.database().ref("expertTips").on("value", t => { t.forEach(function (t) { e.push(t.val()) }), call(e) }) } else alert("Please check your internet connection.....") }
+  </script>
+</body>
+
+</html>

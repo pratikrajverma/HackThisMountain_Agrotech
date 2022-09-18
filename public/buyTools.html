@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgroTech</title>
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="icon" type="image/png" href="images/agriculture_0.png" />
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+</head>
+
+<body onload="loadData()">
+    <head-section></head-section>
+    <pop-up></pop-up>
+    <h2>Buy Tools</h2>
+    <div class="search-input-wrapper" id="searchInputWrapper"> <label for="searchQuery" aria-label="search-bar"
+            tabindex="-1"> <button class="search-button" type="button" tabindex="-1"
+                style="background-color: white; border: none; margin-left: 10px;"> <img src="search.svg"
+                    alt="search icon" /></button></label> <input class="search" type="text"
+            placeholder=" Search by Tool name, brand, material" id="searchQuery" autocomplete="off"
+            onkeyup="search()" /> </div>
+    <div id="toolList" class="loader"></div>
+    <script src="js/header.js"></script>
+
+    <script>
+
+        function search() {
+            let query = document.getElementById("searchQuery").value;
+            let list;
+            let flag = false;
+            if (query !== "") {
+                document.getElementById("toolList").innerHTML = "";
+                let toolArray = [];
+
+
+                const db = this.firebase.database().ref('tools');
+                db.on("value", (snapshot) => {
+                    snapshot.forEach(function (element) {
+                        toolArray.push(element.val());
+                    })
+                    call1(toolArray);
+                })
+
+
+                list += `<ul class="buy-tools-list">`;
+                toolArray.forEach(element => {
+                    let elementName = element.name, elementBrand = element.brand;
+                    if (elementName.toLowerCase().includes(query.toLowerCase())) {
+                        list += `<li>
+        <h3>`+ returnhighlightd(elementName, query, elementName.toLowerCase()) + `</h3>
+        <img src="`+ element.image + `" id="img" width="200px" height="150px" alt="img">
+        <p>Seller Mobile : `+ element.mobile + `</p>  
+        <p>Price : `+ element.price + ` rupees</p>  
+        <p>Brand : `+ element.brand + `</p>
+        <p>Material : `+ element.material + `</p>
+        </li>`
+                        flag = true;
+                    } else if (elementBrand.toLowerCase().includes(query.toLowerCase())) {
+                        flag = true;
+
+                        list += `<li>
+        <h3>`+ element.name + `</h3>
+        <img src="`+ element.image + `" id="img" width="200px" height="150px" alt="img">
+        <p>Seller Mobile : `+ element.mobile + `</p>  
+        <p>Price : `+ element.price + ` rupees</p>  
+        <p>Brand : `+ returnhighlightd(elementBrand, query, elementBrand.toLowerCase()) + `</p>
+        <p>Material : `+ element.material + `</p>
+        </li>`
+                    }
+                });
+                list += `<ul>`;
+                list = list.replace("undefined", "");
+
+                if (flag)
+                    document.getElementById("toolList").innerHTML = list;
+                else {
+                    list += `<img class=nothing-to-show src="noRecordFound.png" alt="no record found">`;
+                    document.getElementById("toolList").innerHTML = list;
+                }
+            } else {
+                loadData();
+            }
+        }
+
+        function call1(toolArray) {
+            let list;
+
+            console.log(toolArray);
+            if (toolArray.length === 0) {
+                list += `<img class=nothing-to-show src="noRecordFound.png" alt="no record found">`;
+            }
+            else {
+                list += `<ul class="buy-tools-list">`;
+                toolArray.forEach(element => {
+
+                    list += `<li>
+        <h3>`+ element.name + `</h3>
+        <img src="`+ element.image + `" id="img" width="200px" height="150px" alt="img">
+        <p>Seller Mobile : `+ element.mobile + `</p>  
+        <p>Price : `+ element.price + ` rupees</p>  
+        <p>Brand : `+ element.brand + `</p>
+        <p>Buying date : `+ element.material + `</p>
+    </li>`
+                });
+                list += `<ul>`;
+            }
+            list = list.replace("undefined", "");
+            document.getElementById("toolList").innerHTML = "";
+            document.getElementById("toolList").classList.remove("loader");
+
+            document.getElementById("toolList").innerHTML = list;
+        }
+
+
+        function loadData() {
+            var ifConnected = window.navigator.onLine;
+            if (!ifConnected) {
+                alert('Please check your internet connection.....');
+            }
+
+
+            else {
+                const db = this.firebase.database().ref('tools');
+                db.on("value", (snapshot) => {
+                    let toolArray = [];
+                    snapshot.forEach(function (element) {
+                        toolArray.push(element.val());
+                    })
+                    call1(toolArray);
+                })
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>AgroTech</title>
+  <link rel="stylesheet" type="text/css" href="css/main.css" />
+  <meta charset="utf-8" />
+  <meta name="description" content="One Place for all your Farming related queries." />
+  <meta name="keywords" content="Farming, Agriculture, Indian Farmers" />
+  <meta name="author" content="Aman Prajapati" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width">
+  <link rel="icon" type="image/png" href="images/agriculture_0.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    body {
+      height: 100%;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      transition: 2s ease-out all;
+      background-repeat: no-repeat
+    }
+
+    #popUpBox {
+      width: 90%;
+      height: 400px;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      background: #fff;
+      box-shadow: 0 0 10px #000;
+      border-radius: 10px;
+      position: absolute;
+      top: 50%;
+      bottom: 50%;
+      left: 50%;
+      right: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      padding: 10px;
+      text-align: center
+    }
+
+    #notificationOverlay {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, .3);
+      z-index: 10
+    }
+
+    #popUpBox button {
+      cursor: pointer;
+      float: right;
+      margin: 2px 5px 10px 20px
+    }
+
+    .notification {
+      height: fit-content;
+      width: 93%;
+      margin: 20px;
+      border-left: 4px solid #00458b;
+      border-radius: 4px;
+      background-color: #ededf0;
+      padding: 20px;
+      font-size: 15px
+    }
+
+    @media (max-width:767px) and (min-width:280px) {
+      #popUpBox button {
+        margin: 10px -11px 10px 0
+      }
+
+      .notification {
+        width: 88%;
+        margin: 10px 0 10px
+      }
+
+      .bell1 {
+        margin-left: 2px;
+        margin-bottom: -5px
+      }
+
+      .cross-button {
+        margin-right: -10px
+      }
+    }
+
+    .cross-button {
+      border: none;
+      background-color: #fff;
+      margin-right: 10px;
+      margin-top: 0
+    }
+
+    .bell1 {
+      position: absolute;
+      bottom: 10px;
+      left: 8px;
+      cursor: pointer;
+      border-radius: 50px;
+      padding: 5px;
+      border: 5px solid #e05a47;
+      box-shadow: 0 0 35px #fff;
+      transition: all .5s ease
+    }
+
+    .hide1 {
+      display: none
+    }
+
+    .fa-close {
+      position: relative
+    }
+  </style>
+</head>
+
+<body>
+  <div id="pop"></div>
+  <pop-up></pop-up>
+  <head-section></head-section>
+  <div class="agriculture">
+    <div class="agri">Agriculture</div>
+    <p style="font-size: larger">" Agriculture is the most healthful, most useful and most noble employment of Man. "
+    </p>
+    <h6 style="font-size: large">~ George Washington</h6>
+  </div>
+  <i class="fa fa-bell bell1" style="font-size:35px;color:rgb(224, 90, 71)" onclick="loadNotification()"></i>
+  <script src="https://cdn.cai.tools.sap/webchat/webchat.js" channelId="64d25f1f-7d2f-4ad3-8407-048a461c66f2"
+    token="d9d810c8424b875d61d790aa55dde7d1" id="cai-webchat">
+    </script>
+  <script src="js/header.js"></script>
+  <script>
+    let firstTime = sessionStorage.getItem('firstTime');
+    if (!firstTime) {
+      loadNotification();
+    }
+    function loadNotification() {
+      popUp = ` <div id="notificationOverlay" onclick="off()"></div>
+    <div id="popUpnotificationOverlay"></div>
+    <div id="popUpBox">
+     <div style="width:100%;">
+       <i style="font-size:40px; margin-left:auto; margin-right:auto; font-family: 'Roboto', sans-serif; font-style: Normal">Notification</i>
+       <button onclick="hideNotification()" class="cross-button"><i class="fa fa-close"></i></button>
+     </div>
+     <div class="notification">Registered Farmers will receive SMSs only in case of SEVERE THUNDERSTORM, THUNDERSTORM
+       WITH SQUALL AND THUNDERSTORM WITH HAIL However, all alert are available on Kisan Suvidha mobile app.</div>
+     <div class="notification">Under the Pradhan Mantri Kisan (PM-Kisan) Samman Nidhi Yojana (Scheme) the Narendra Modi-led government provides income support of Rs 6,000 to small and marginal farmer families having combined land holding/ownership of up to 2 hectares. While beneficiaries get the first installment between December and March,</div>
+     <div class="notification">In June, 2021, a week-long Indian mango promotion programme was organised in Bahrain where 16 varieties of the fruit including three GI certified Khirsapati and Lakshmanbhog (West Bengal), Zardalu (Bihar) were displayed, the official release said.</div>
+     <div class="notification">To apply for PM Kisan Samman Yojana, you have to go to the official website i.e  http://pmkisan.gov.in. </div>
+    </div>`
+      document.getElementById("pop").innerHTML = popUp;
+      sessionStorage.setItem("firstTime", "1");
+      let firstTime1 = sessionStorage.getItem('firstTime');
+    }
+    function hideNotification() {
+      document.getElementById('popUpBox').classList.toggle("hide1");
+      document.getElementById("notificationOverlay").classList.toggle("hide1");
+      document.getElementById('popUpnotificationOverlay').classList.toggle("hide1");
+    }
+
+    var i = 0;
+    var images = [];
+    images[0] = "images/federico-respini-sYffw0LNr7s-unsplash.jpg";
+    images[1] = "images/img2.jpg";
+    images[2] = "images/img3.jpg";
+    images[3] = "images/img4.jpg";
+    images[4] = "images/img5.jpg";
+    images[5] = "images/img6.jpg";
+    images[6] = "images/img7.jpg";
+    function changeImg() {
+      document.body.style.backgroundImage = "url('" + images[i] + "')";
+      if (i < images.length - 1) {
+        i++;
+      } else {
+        i = 0;
+      }
+      setTimeout("changeImg()", 5000);
+    }
+    window.onload = changeImg;
+  </script>
+</body>
+
+</html>
+
+

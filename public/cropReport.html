@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AgroTech</title>
+    <link rel="stylesheet" type="text/css" href="css/main.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="images/agriculture_0.png" />
+</head>
+<script src="https://smtpjs.com/v3/smtp.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+    #downloadReport {
+        width: 200px;
+        height: 30px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: -5px;
+        margin-bottom: 20px;
+        cursor: pointer
+    }
+
+    #show-data {
+        padding: 15px
+    }
+
+    .center {
+        display: block;
+        margin-right: auto;
+        margin-left: auto
+    }
+
+    .file {
+        opacity: 0;
+        width: .1px;
+        height: .1px;
+        position: absolute
+    }
+
+    .file-input label {
+        display: block;
+        position: relative;
+        width: 400px;
+        height: 200px;
+        background: #238ae6;
+        box-shadow: 0 4px 7px rgba(0, 0, 0, .4);
+        display: flex;
+        border: 2px solid #000;
+        border-style: dashed;
+        align-items: center;
+        justify-content: center;
+        margin-right: auto;
+        margin-left: auto;
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform .2s ease-out
+    }
+
+    .file-name {
+        position: absolute;
+        bottom: -35px;
+        left: 10px;
+        font-size: .85rem;
+        color: #555
+    }
+
+    input:focus+label,
+    input:hover+label {
+        transform: scale(1.02)
+    }
+
+    input:focus+label {
+        outline: 1px solid #000;
+        outline: -webkit-focus-ring-color auto 2px
+    }
+
+    .h {
+        text-align: center;
+        padding: 20px;
+        font-size: 20px;
+        margin-top: -50px
+    }
+
+    #predictNow {
+        width: 100px;
+        height: 30px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: -5px
+    }
+
+    #imageSize {
+        margin-top: 10px;
+        text-align: center
+    }
+
+    .hide {
+        display: none
+    }
+
+    .note {
+        width: 50%;
+        padding: 10px;
+        margin-left: auto;
+        margin-right: auto
+    }
+
+    .disable {
+        cursor: no-drop
+    }
+
+    .enable {
+        cursor: pointer
+    }
+
+    @media (max-width:767px) and (min-width:280px) {
+        .h {
+            margin-top: -50px
+        }
+
+        .file-input label {
+            height: 200px;
+            width: 70%;
+            text-align: center
+        }
+
+        .note {
+            width: 90%
+        }
+    }
+</style>
+
+<body>
+    <head-section></head-section>
+    <pop-up></pop-up>
+    <script src="js/header.js"></script>
+
+    <h2>Check Crop health</h2>
+
+    <div id="report">
+        <img class="hide" src="" id="cropImage" width=300 height="300">
+        <div id="show-data"></div>
+    </div>
+
+    <div id="division">
+        <div class="h">Upload Your Images Here:</div>
+        <form action="https://agentcrop.azurewebsites.net/api/predict" class="file-input" method="POST"
+            enctype="multipart/form-data" id="api-form">
+            <input type="file" id="file" name="files" class="file" multiple required onchange="save(event)">
+            <label for="file">
+                <span id="imageSelected">Select images</span>
+                <p class="file-name"></p>
+            </label>
+            <div class="note">Note: Maximum Total file size limit is 50 MB. Only PNG, JPG/JPEG files are allowed. Your
+                Uploaded Images automatically get deleted after 1 hour.</div>
+            <div>
+                <p id="imageSize"></p>
+            </div>
+            <input type="submit" value="Predict Now" id="predictNow" />
+        </form>
+    </div>
+
+    <div>
+        <button class="hidden" id="downloadReport"><i class="fa fa-download"></i>&nbsp;&nbsp;&nbsp;Download
+            Report</button>
+    </div>
+
+
+    <script>
+        document.getElementById("downloadReport").addEventListener("click", () => {
+            const invoice = this.document.getElementById("report");
+            var opt = {
+                margin: 1,
+                filename: 'Crop-Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().from(invoice).set(opt).save();
+        })
+
+        let src;
+        document.getElementById("predictNow").disabled = true;
+        document.getElementById("predictNow").classList.add("disable");
+        document.getElementById("file").addEventListener("change", () => {
+            let imageSelected = document.getElementById("imageSelected");
+            imageSelected.innerHTML = "";
+            imageSelected.innerHTML = "Image Uploaded Successfully, please click on predict now";
+            document.getElementById("predictNow").classList.remove("disable");
+            document.getElementById("predictNow").disabled = false;
+            document.getElementById("predictNow").classList.add("enable");
+        })
+
+        function save(e) {
+            const image = document.getElementById("file");
+            document.getElementById("imageSize").innerHTML += image.files[0].name + "  ";
+            var size = image.files[0].size / 1000;
+            document.getElementById("imageSize").innerHTML += size + " KB";
+            src = URL.createObjectURL(e.target.files[0]);
+        }
+
+        function workWithData(data) {
+            let image = document.getElementById("file");
+            let image1 = document.getElementById("cropImage");
+            image1.classList.toggle("hide");
+            image1.classList.add("center");
+            image1.src = src;
+            document.getElementById("division").classList.add("hide");
+            document.getElementById('show-data').innerHTML = "";
+            for (let imageName in data) {
+                document.getElementById('show-data').innerHTML += "<h3>" + imageName + ": </h3>";
+                for (let detail in data[imageName]) {
+                    document.getElementById('show-data').innerHTML += "<p><strong>" + detail.replace(detail[0], detail[0].toUpperCase()) + ": </strong>" + data[imageName][detail] + "</p>";
+                }
+            }
+            document.getElementById("downloadReport").classList.remove(".hidden");
+            document.getElementById("downloadReport").classList.add("visible");
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const url = form.action;
+            const formData = new FormData();
+            const photos = document.querySelector('input[type="file"][multiple]');
+            for (let i = 0; i < photos.files.length; i++) {
+                formData.append('files', photos.files[i]);
+            }
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                origin: "*"
+            })
+                .then(
+                    function (response) {
+
+                        if (!response.ok) {
+                            console.log('Looks like there was a problem. Status Code: ' + response.status);
+                            return;
+                        }
+                        response.json().then(function (data) {
+                            workWithData(data);
+                        });
+                    }
+                )
+                .catch(function (err) {
+                    console.log('Fetch Error :-S', err);
+                });
+        }
+        const apiForm = document.getElementById("api-form");
+        apiForm.addEventListener("submit", handleFormSubmit);
+    </script>
+</body>
+
+</html>
